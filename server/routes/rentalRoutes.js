@@ -29,15 +29,15 @@ router.get('/users/:id/rentals', verifyToken, FindAllMyRentalsController);
 // Protected routes ------------------------------------------------------
 
 // Get all rentals
-router.get('/rentals', verifyToken, requireAdmin, FindAllRentalsController);
+router.get('/admin/rentals', verifyToken, requireAdmin, FindAllRentalsController);
 
 // Update rental status
-router.put('/rentals/:id', verifyToken, requireAdmin, UpdateRentalStatusController);
+router.put('/admin/rentals/:id', verifyToken, requireAdmin, UpdateRentalStatusController);
 
 // End a rental - only use after unit has been rented
-router.put('/rentals/:id/end', verifyToken, requireAdmin, EndRentalController);
+router.put('/admin/rentals/:id/end', verifyToken, requireAdmin, EndRentalController);
 
 // Delete a rental
-router.delete('/rentals/:id', verifyToken, requireAdmin, DeleteRentalController);
+router.delete('/admin/rentals/:id', verifyToken, requireAdmin, DeleteRentalController);
 
 module.exports = router;
