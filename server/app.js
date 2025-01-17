@@ -17,7 +17,7 @@ app.use(express.json())
 
 // cors config
 const corsOptions = {
-    origin: [process.env.HOST_LINK, 'http://localhost:9000'],
+    origin: [process.env.HOST_LINK, 'http://localhost:9000/#/'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }
