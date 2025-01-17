@@ -24,7 +24,7 @@ module.exports.UserLoginController = async (req, res) => {
             // Clear the old cookie if user is logged in elsewhere
             const isProduction = process.env.NODE_ENV === 'production';
             // res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
-            res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax',, path: '/' });
+            res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/' });
         }
 
         // Update the loginInfo with the new token
