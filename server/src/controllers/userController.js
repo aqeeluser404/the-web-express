@@ -23,7 +23,8 @@ module.exports.UserLoginController = async (req, res) => {
 
             // Clear the old cookie if user is logged in elsewhere
             const isProduction = process.env.NODE_ENV === 'production';
-            res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
+            // res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
+            res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax',, path: '/' });
         }
 
         // Update the loginInfo with the new token
@@ -32,10 +33,17 @@ module.exports.UserLoginController = async (req, res) => {
         // Set new cookie with the new token
         const isProduction = process.env.NODE_ENV === 'production';
         const maxAge = 24 * 60 * 60 * 1000;  // 1 day
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: isProduction,
+        //     sameSite: 'None',
+        //     maxAge: maxAge,
+        //     path: '/'
+        // });
         res.cookie('token', token, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'None',
+            sameSite: isProduction ? 'None' : 'Lax',
             maxAge: maxAge,
             path: '/'
         });
@@ -51,7 +59,8 @@ module.exports.UserLogoutController = async (req, res) => {
 
         const isProduction = process.env.NODE_ENV === 'production'                                                          // clearing the cookie 
         // Clear the cookie with the same settings used to set it
-        res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
+        // res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
+        res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/' });
         res.json({ message: 'User logged out successfully' })
     } catch (error) {
         res.status(400).json({ error: error.message })
