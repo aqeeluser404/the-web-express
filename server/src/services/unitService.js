@@ -3,11 +3,12 @@ const ImageKit = require('imagekit');
 
 module.exports.CreateUnitService = async (unitDetails) => {
     try {
-        // const existingUnit = await Unit.findOne({ unitNumber: unitDetails.unitNumber });
-        // if (existingUnit) {
-        //     throw new Error('Unit already exists');
-        // }
+        const existingUnit = await Unit.findOne({ unitNumber: unitDetails.unitNumber });
+        if (existingUnit) {
+            throw new Error('Unit already exists');
+        }
         const unitModelData = new Unit({
+            unitNumber: unitDetails.unitNumber,
             unitType: unitDetails.unitType,
             bedrooms: unitDetails.bedrooms,
             kitchens: unitDetails.kitchens,

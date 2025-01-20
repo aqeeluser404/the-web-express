@@ -2,14 +2,14 @@ const mongoose = require('mongoose');
 var Schema = mongoose.Schema
 const unitSchema = new mongoose.Schema(
     {
+        unitNumber: {
+            type: Number,
+            required: true
+        },
         unitType: {
             type: String,
             required: true
         },
-        // unitNumber: {
-        //     type: String,
-        //     required: true
-        // },
         bedrooms: {
             type: Number,
             required: true
@@ -30,28 +30,6 @@ const unitSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
-        // unitDetails: {
-        //     bedrooms: {
-        //         type: Number,
-        //         required: true
-        //     },
-        //     kitchens: {
-        //         type: Number,
-        //         required: true
-        //     },
-        //     bathrooms: {
-        //         type: Number,
-        //         required: true
-        //     },
-        //     parking: {
-        //         type: Number,
-        //         required: true
-        //     },
-        //     lounges: {
-        //         type: Number,
-        //         required: true
-        //     }
-        // },
         unitDescription: {
             type: String,
             required: true

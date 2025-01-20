@@ -15,10 +15,20 @@ app.use(compression())
 app.use(cookieParser())
 app.use(express.json())
 
+const allowedOrigins = [
+    process.env.HOST_LINK_1,
+    process.env.HOST_LINK_2,
+    process.env.HOST_LINK_3
+]
 // cors config
 const corsOptions = {
-    // origin: [process.env.HOST_LINK_1, process.env.HOST_LINK_2, process.env.HOST_LINK_3],
-    origin: 'https://the-web-39693.web.app',
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }
@@ -29,7 +39,6 @@ cron.schedule('*/10 * * * *', () => {
     console.log('Running token check every ten minutes');
     checkTokens()
 })
-
 
 // routes --------------------------------------------------------------------------------------
 app.get('/', (req, res) => {
@@ -50,6 +59,7 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP' })
 })
+
 // Route to check if token exists
 app.get('/check-token', (req, res) => {
     const token = req.cookies.token;
@@ -59,6 +69,7 @@ app.get('/check-token', (req, res) => {
         res.status(200).json({ exists: false });
     }
 })
+
 // Route to retrieve token if token exists
 app.get('/get-token', (req, res) => {
     const token = req.cookies.token
@@ -72,20 +83,14 @@ app.get('/get-token', (req, res) => {
     } catch (error) {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
-});
+})
+
 // Route to remove the token (clear cookie)
 app.post('/remove-token', (req, res) => {
     const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: 'None', path: '/' });
     res.send({ message: 'Token removed' });
 })
-// Route to remove the token (clear cookie)
-// app.post('/remove-token', (req, res) => {
-//     const isProduction = process.env.NODE_ENV === 'production';
-//     res.clearCookie('token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'None' : 'Lax', path: '/' });
-//     res.send({ message: 'Token removed' });
-// })
-
 
 // application routes
 const routes = [
@@ -97,7 +102,6 @@ const routes = [
 routes.forEach(route => {
     app.use(route)
 })
-
 
 // Backend start -------------------------------------------------------------------------------
 app.listen(process.env.PORT, function check(error) {

@@ -26,7 +26,7 @@ const rentalSchema = new mongoose.Schema(
 
         // FK FIELDS
         unit: {
-            type: String,
+            type: Schema.Types.ObjectId,
             ref: 'Unit',
             required: true
         },
