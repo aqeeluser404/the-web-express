@@ -6,6 +6,10 @@ const unitSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        // unitNumber: {
+        //     type: String,
+        //     required: true
+        // },
         bedrooms: {
             type: Number,
             required: true

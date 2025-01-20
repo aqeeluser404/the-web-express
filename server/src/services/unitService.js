@@ -9,7 +9,6 @@ module.exports.CreateUnitService = async (unitDetails) => {
         // }
         const unitModelData = new Unit({
             unitType: unitDetails.unitType,
-            // unitDetails: unitDetails.unitDetails,
             bedrooms: unitDetails.bedrooms,
             kitchens: unitDetails.kitchens,
             bathrooms: unitDetails.bathrooms,
@@ -24,9 +23,6 @@ module.exports.CreateUnitService = async (unitDetails) => {
         await unitModelData.save();
         return true;
     } catch (error) {
-        if (error.code === 11000) {
-            throw new Error('Unit already exists');
-        }
         throw error;
     }
 };
