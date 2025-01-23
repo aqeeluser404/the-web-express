@@ -1,12 +1,42 @@
 const Unit = require('../models/unitModel');
 const ImageKit = require('imagekit');
 
-module.exports.CreateUnitService = async (unitDetails) => {
+const imageKit = new ImageKit({
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
+});
+
+const uploadImageToImageKit = async (file) => {
     try {
-        const existingUnit = await Unit.findOne({ unitNumber: unitDetails.unitNumber });
-        if (existingUnit) {
-            throw new Error('Unit already exists');
+        const result = await imageKit.upload({
+            file: file.buffer,
+            fileName: file.originalname
+        });
+        return {
+            imageUrl: result.url,
+            fileId: result.fileId // Store this ID for deletion
+        };
+    } catch (error) {
+        console.error('Error uploading image to ImageKit:', error.message);
+        throw error;
+    }
+};
+
+module.exports.CreateUnitService = async (unitDetails, unitImg) => {
+    try {
+        if (unitImg && unitImg.length > 0) {
+            const uploadPromises = unitImg.map(file => uploadImageToImageKit(file));
+            const uploadedImages = await Promise.all(uploadPromises);
+
+            unitDetails.images = uploadedImages.map(img => ({
+                imageUrl: img.imageUrl,
+                fileId: img.fileId
+            }));
+        } else {
+            unitDetails.images = [];
         }
+
         const unitModelData = new Unit({
             unitNumber: unitDetails.unitNumber,
             unitType: unitDetails.unitType,
@@ -22,7 +52,8 @@ module.exports.CreateUnitService = async (unitDetails) => {
             dateCreated: new Date()
         });
         await unitModelData.save();
-        return true;
+
+        return unitModelData;
     } catch (error) {
         throw error;
     }
@@ -61,22 +92,6 @@ module.exports.UpdateUnitService = async (id, unitDetails) => {
     return unit;
 };
 
-const imageKit = new ImageKit({
-    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
-});
-
-const deleteImageFromImageKit = async (fileId) => {
-    try {
-        const response = await imageKit.deleteFile(fileId);
-        console.log(`Deleted image from ImageKit: ${fileId}`);
-    } catch (error) {
-        console.error(`Failed to delete image from ImageKit: ${fileId}`, error.message);
-        console.error(`Error details:`, error.response ? error.response.data : 'No response data');
-    }
-};
-
 // module.exports.ReplaceUnitImagesService = async (id, newImages) => {
 //     try {
 //         const unit = await Unit.findById(id);
@@ -107,6 +122,16 @@ const deleteImageFromImageKit = async (fileId) => {
 //         throw error;
 //     }
 // };
+
+const deleteImageFromImageKit = async (fileId) => {
+    try {
+        const response = await imageKit.deleteFile(fileId);
+        console.log(`Deleted image from ImageKit: ${fileId}`);
+    } catch (error) {
+        console.error(`Failed to delete image from ImageKit: ${fileId}`, error.message);
+        console.error(`Error details:`, error.response ? error.response.data : 'No response data');
+    }
+};
 
 module.exports.DeleteUnitService = async (id) => {
     const unit = await Unit.findById(id);

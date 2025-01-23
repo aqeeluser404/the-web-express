@@ -1,51 +1,14 @@
 const UnitService = require('../services/unitService');
-const axios = require('axios');
-const FormData = require('form-data');
-const ImageKit = require('imagekit');
-
-const imageKit = new ImageKit({
-    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
-});
-
-const uploadImageToImageKit = async (file) => {
-    try {
-        const result = await imageKit.upload({
-            file: file.buffer,
-            fileName: file.originalname
-        });
-        return {
-            imageUrl: result.url,
-            fileId: result.fileId // Store this ID for deletion
-        };
-    } catch (error) {
-        console.error('Error uploading image to ImageKit:', error.message);
-        throw error;
-    }
-};
 
 module.exports.CreateUnitController = async (req, res) => {
     const { body: unitDetails, files: unitImg } = req;
 
     try {
-        if (unitImg && unitImg.length > 0) {
-            const uploadPromises = unitImg.map(file => uploadImageToImageKit(file));
-            const uploadedImages = await Promise.all(uploadPromises);
-
-            unitDetails.images = uploadedImages.map(img => ({
-                imageUrl: img.imageUrl,
-                fileId: img.fileId
-            }));
-        } else {
-            unitDetails.images = [];
-        }
-        await UnitService.CreateUnitService(unitDetails);
-
-        res.status(201).json({ message: 'Unit created successfully' });
+        const result = await UnitService.CreateUnitService(unitDetails, unitImg);
+        res.status(201).json({ message: 'Unit created successfully', result });
     } catch (error) {
-        console.error('Error uploading image:', error.message);
-        res.status(400).json({ error: 'An error occurred while uploading the image' });
+        console.error('Error creating unit:', error.message);
+        res.status(400).json({ error: 'An error occurred while creating the unit' });
     }
 };
 

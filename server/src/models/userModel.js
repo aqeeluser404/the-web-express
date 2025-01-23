@@ -74,6 +74,13 @@ const userSchema = new mongoose.Schema(
             ref: 'Rental'
         }],
 
+        // DOCUMENTS
+        documents: [{
+            documentUrl: { type: String, required: false },
+            fileId: { type: String, required: false },
+            uploadDate: { type: Date, default: Date.now }
+        }]
+
     }, { collection: 'User' }
 )
 

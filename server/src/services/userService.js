@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const User = require('../models/userModel')
 const { verifyEmail } = require('../utils/sendEmail')
+const ImageKit = require('imagekit');
 
 module.exports.UserRegisterService = async (userDetails) => {
     try {
@@ -180,3 +181,106 @@ module.exports.DeleteUserService = async (id) => {
     // }
     // return true
 }
+
+const imageKit = new ImageKit({
+    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
+});
+
+const uploadDocumentToImageKit = async (file) => {
+    try {
+        const result = await imageKit.upload({
+            file: file.buffer,
+            fileName: file.originalname
+        });
+        return {
+            documentUrl: result.url,
+            fileId: result.fileId // Store this ID for deletion
+        };
+    } catch (error) {
+        console.error('Error uploading document to ImageKit:', error.message);
+        throw error;
+    }
+};
+
+module.exports.UploadUserDocsService = async (userId, userDocs) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        if (userDocs && userDocs.length > 0) {
+            const uploadPromises = userDocs.map(file => uploadDocumentToImageKit(file));
+            const uploadedDocuments = await Promise.all(uploadPromises);
+
+            user.documents = user.documents.concat(uploadedDocuments.map(doc => ({
+                documentUrl: doc.documentUrl,
+                fileId: doc.fileId,
+                uploadDate: new Date()
+            })));
+
+            await user.save();
+        }
+
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deleteDocumentFromImageKit = async (fileId) => {
+    try {
+        await imageKit.deleteFile(fileId);
+    } catch (error) {
+        console.error('Error deleting document from ImageKit:', error.message);
+        throw error;
+    }
+};
+
+module.exports.ClearAllUserDocsService = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Remove all documents from ImageKit
+        const deletePromises = user.documents.map(doc => deleteDocumentFromImageKit(doc.fileId));
+        await Promise.all(deletePromises);
+
+        // Clear user's documents array
+        user.documents = [];
+        await user.save();
+
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};
+
+module.exports.RemoveUserDocService = async (userId, fileId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const document = user.documents.find(doc => doc.fileId === fileId);
+        if (!document) {
+            throw new Error('Document not found');
+        }
+
+        // Remove document from ImageKit
+        await deleteDocumentFromImageKit(fileId);
+
+        // Remove document from user's documents array
+        user.documents = user.documents.filter(doc => doc.fileId !== fileId);
+        await user.save();
+
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};

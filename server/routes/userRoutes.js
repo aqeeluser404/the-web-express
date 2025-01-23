@@ -11,10 +11,13 @@ const {
     FindAllUsersController,
     FindUsersLoggedInController,
     FindUsersFrequentlyLoggedInController,
-    DeleteUserController
+    DeleteUserController,
+    UploadUserDocsController, 
+    ClearAllUserDocsController, 
+    RemoveUserDocController
 } = require('../src/controllers/userController');
 const { verifyToken, requireAdmin } = require('../middleware/authentication');
-
+const upload = require('../middleware/multerConfig')
 
 
 // User profile routes -----------------------------------------------
@@ -40,6 +43,13 @@ router.post('/auth/register', UserRegisterController);
 
 // User logout
 router.post('/auth/logout/:id', UserLogoutController); 
+
+
+
+
+router.post('/users/:id/documents', upload.array('documents'), verifyToken, UploadUserDocsController)
+router.delete('/users/:id/documents', verifyToken, ClearAllUserDocsController)
+router.delete('/users/:id/documents/:doc', verifyToken, RemoveUserDocController)
 
 
 

@@ -143,3 +143,36 @@ module.exports.DeleteUserController = async (req, res) => {
         res.status(404).json({ error: error.message })
     }
 }
+module.exports.UploadUserDocsController = async (req, res) => {
+    try {
+        const files = req.files;
+        const userId = req.params.id;
+
+        const result = await UserService.UploadUserDocsService(userId, files);
+
+        res.status(200).json({ message: 'Documents uploaded successfully', result });
+    } catch (error) {
+        res.status(500).json({ message: 'Error uploading documents', error });
+    }
+}
+module.exports.ClearAllUserDocsController = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const result = await UserService.ClearAllUserDocsService(userId);
+
+        res.status(200).json({ message: 'All documents cleared successfully', result });
+    } catch (error) {
+        res.status(500).json({ message: 'Error clearing documents', error });
+    }
+}
+module.exports.RemoveUserDocController = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const fileId = req.params.doc;
+        const result = await UserService.RemoveUserDocService(userId, fileId);
+
+        res.status(200).json({ message: 'Document removed successfully', result });
+    } catch (error) {
+        res.status(500).json({ message: 'Error removing document', error });
+    }
+}
