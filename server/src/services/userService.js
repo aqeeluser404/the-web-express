@@ -32,16 +32,16 @@ module.exports.UserRegisterService = async (userDetails) => {
         })
 
         // generate email token
-        // const verificationToken = jwt.sign({ userId: userModelData._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        // userModelData.verification = {
-        //     isVerified: false,
-        //     verificationToken: verificationToken,
-        //     verificationTokenExpires: Date.now() + 86400000     // 24 hours
-        // }
+        const verificationToken = jwt.sign({ userId: userModelData._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        userModelData.verification = {
+            isVerified: false,
+            verificationToken: verificationToken,
+            verificationTokenExpires: Date.now() + 86400000     // 24 hours
+        }
         await userModelData.save()
 
         // Send verification email
-        // verifyEmail(userModelData)
+        verifyEmail(userModelData)
 
         return true;
     } catch (error) {
