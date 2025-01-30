@@ -4,7 +4,7 @@ const createMailTransporter = require('./createMailTransporter')
 const verifyEmail = (user) => {
     const transporter = createMailTransporter();
 
-    const verificationLink = `${process.env.HOST_LINK_3}/#/verify-email?token=${user.verification.verificationToken}`
+    const verificationLink = `${process.env.HOST_LINK_2}/#/verify-email?token=${user.verification.verificationToken}`
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
         to: user.email,
@@ -40,7 +40,7 @@ const verifyEmail = (user) => {
 const sendResetEmail = (user, token) => {
     const transporter = createMailTransporter()
 
-    const resetLink = `${process.env.HOST_LINK_3}/#/reset-password?token=${token}`
+    const resetLink = `${process.env.HOST_LINK_2}/#/reset-password?token=${token}`
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
         to: user.email,

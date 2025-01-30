@@ -25,6 +25,8 @@ router.get('/rentals/:id', verifyToken, FindRentalByIdController);
 router.get('/users/:id/rentals', verifyToken, FindAllMyRentalsController);
 
 
+// Delete a rental
+router.delete('/rentals/:id', verifyToken, DeleteRentalController);
 
 // Protected routes ------------------------------------------------------
 
@@ -37,7 +39,6 @@ router.put('/admin/rentals/:id', verifyToken, requireAdmin, UpdateRentalStatusCo
 // End a rental - only use after unit has been rented
 router.put('/admin/rentals/:id/end', verifyToken, requireAdmin, EndRentalController);
 
-// Delete a rental
-router.delete('/admin/rentals/:id', verifyToken, requireAdmin, DeleteRentalController);
+
 
 module.exports = router;
