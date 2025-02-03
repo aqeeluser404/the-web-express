@@ -4,15 +4,24 @@ const User = require('../models/userModel')
 
 module.exports.CreateRentalService = async (rentalDetails) => {
     try {
-        // Check if unit is available
-        const unit = await Unit.findById(rentalDetails.unit);
-        if (!unit) {
-            throw new Error('Unit not found');
+        // Check if rental already exists based on unitNumber and applicationDate
+        const existingRental = await Rental.findOne({
+            unit: rentalDetails.unit,
+            applicationDate: rentalDetails.applicationDate        
+        });
+        if (existingRental) {
+            throw new Error('Rental already exists for this unit and application date');
         }
 
-        if (unit.currentOccupants >= unit.unitOccupants) {
-            throw new Error('Unit is already at full capacity');
+        // Check if unit is available
+        const unitAvailability = await Unit.findOne({ _id: rentalDetails.unit });
+        if (unitAvailability.unitStatus === 'Occupied') {
+            throw new Error('Unit is already occupied');
         }
+
+        // Update unit status
+        unitAvailability.unitStatus = 'Occupied';
+        await unitAvailability.save();
 
         // Create rental
         const rentalModelData = new Rental({
@@ -20,9 +29,9 @@ module.exports.CreateRentalService = async (rentalDetails) => {
             status: 'Pending',  // This can be updated once the documents are uploaded
             rentalStartDate: rentalDetails.rentalStartDate || null,    // This can be updated once the documents are uploaded
             rentalEndDate: rentalDetails.rentalEndDate || null,  
-            rentalPrice: unit.unitPrice,    // Get from the checking unit var
-            unit: unit._id,    // Get from the checking unit var
-            unitType: unit.unitType,    // Get from the checking unit var
+            rentalPrice: unitAvailability.unitPrice,    // Get from the checking unit var
+            unit: unitAvailability._id,    // Get from the checking unit var
+            unitType: unitAvailability.unitType,    // Get from the checking unit var
             user: rentalDetails.user
         });
 
@@ -36,10 +45,12 @@ module.exports.CreateRentalService = async (rentalDetails) => {
             { new: true }
         );
 
-        // Update the rental history in unit and increment current occupants
-        unit.currentOccupants += 1;
-        unit.rentedHistory.push(rentalModelData._id);
-        await unit.save();
+        // Update the rental history in unit
+        await Unit.findOneAndUpdate(
+            { _id: unitAvailability._id }, 
+            { $push: { rentedHistory: rentalModelData._id } }, 
+            { new: true }
+        );
 
         return rentalModelData;
     } catch (error) {
@@ -66,13 +77,19 @@ module.exports.DeleteRentalService = async (rentalId) => {
             { new: true }
         );
 
-        // Remove rental from unit's rentedHistory and decrement current occupants
-        const unit = await Unit.findById(rental.unit);
-        if (unit) {
-            unit.currentOccupants -= 1;
-            unit.rentedHistory.pull(rental._id);
-            await unit.save();
-        }
+        // Remove rental from unit's rentedHistory
+        await Unit.findByIdAndUpdate(
+            rental.unit,
+            { $pull: { rentedHistory: rental._id } },
+            { new: true }
+        );
+
+        // Update unit status to 'Available'
+        await Unit.findByIdAndUpdate(
+            rental.unit,
+            { unitStatus: 'Available' },
+            { new: true }
+        );
 
         // Delete the rental
         await Rental.findByIdAndDelete(rentalId);
@@ -141,16 +158,18 @@ module.exports.EndRentalService = async (rentalId) => {
         }
 
         if (rental.status !== "Approved") {
-            throw new Error("Cannot end a rental if it was not approved");
+            throw new Error("Cannot end a rental if it was not approved")
         }
 
         // Update rental status
         rental.status = 'Rental closed';
         rental.rentalEndDate = new Date();
-        await rental.save();
 
-        // Decrement current occupants and update unit status
-        unit.currentOccupants -= 1;
+        // Reset the unit status
+        unit.status = 'Available';
+
+        // Save the changes
+        await rental.save();
         await unit.save();
 
         return rental;

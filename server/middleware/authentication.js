@@ -18,7 +18,7 @@ async function checkTokens() {
                     await user.save();
                     console.log(`User ${user._id} logged out due to expired token`);
                     try {                                                                                   // Call the logout controller to clear the cookie
-                        await axios.post(`${process.env.BACKEND_HOST_LINK}/user/logout/${user._id}`)
+                        await axios.post(`${process.env.BACKEND_HOST_LINK}/auth/logout/${user._id}`)
                     } catch (error) {
                         console.error(`Failed to log out user ${user._id}:`, error)
                     }

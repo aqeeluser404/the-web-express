@@ -40,8 +40,11 @@ module.exports.CreateUnitService = async (unitDetails, unitImg) => {
         const unitModelData = new Unit({
             unitNumber: unitDetails.unitNumber,
             unitType: unitDetails.unitType,
-            unitOccupants: unitDetails.unitOccupants,
-            currentOccupants: 0, // Initialize current occupants to 0
+            bedrooms: unitDetails.bedrooms,
+            kitchens: unitDetails.kitchens,
+            bathrooms: unitDetails.bathrooms,
+            parking: unitDetails.parking,
+            lounges: unitDetails.lounges,
             unitDescription: unitDetails.unitDescription,
             unitPrice: unitDetails.unitPrice,
             unitStatus: 'Available',

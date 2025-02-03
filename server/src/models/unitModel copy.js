@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
+var Schema = mongoose.Schema
 const unitSchema = new mongoose.Schema(
     {
         unitNumber: {
@@ -11,13 +10,25 @@ const unitSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        unitOccupants: {
+        bedrooms: {
             type: Number,
             required: true
         },
-        currentOccupants: {
+        kitchens: {
             type: Number,
-            default: 0
+            required: true
+        },
+        bathrooms: {
+            type: Number,
+            required: true
+        },
+        parking: {
+            type: Number,
+            required: true
+        },
+        lounges: {
+            type: Number,
+            required: true
         },
         unitDescription: {
             type: String,
@@ -30,7 +41,7 @@ const unitSchema = new mongoose.Schema(
         unitStatus: {
             type: String,
             enum: ['Available', 'Occupied'],
-            default: 'Available'
+            required: true
         },
         images: [{
             imageUrl: { type: String, required: false },
@@ -46,11 +57,5 @@ const unitSchema = new mongoose.Schema(
         }]
     }, { collection: 'Unit' }
 );
-
-// Pre-save hook to update unitStatus
-unitSchema.pre('save', function(next) {
-    this.unitStatus = this.currentOccupants >= this.unitOccupants ? 'Occupied' : 'Available';
-    next();
-});
 
 module.exports = mongoose.model('Unit', unitSchema);
