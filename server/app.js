@@ -24,7 +24,7 @@ const allowedOrigins = [
 // cors config
 const corsOptions = {
     origin: function (origin, callback) {
-        console.log('Origin:', origin); // Log the origin for debugging
+        // console.log('Origin:', origin); // Log the origin for debugging
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
             callback(null, true);
         } else {
@@ -41,7 +41,10 @@ cron.schedule('*/10 * * * *', () => {
     console.log('Running token check every ten minutes');
     checkTokens()
 })
-
+// cron.schedule('*/1 * * * *', () => {
+//     console.log('Running token check every minute');
+//     checkTokens();
+// })
 // routes --------------------------------------------------------------------------------------
 app.get('/', (req, res) => {
     res.send('Backend is running');

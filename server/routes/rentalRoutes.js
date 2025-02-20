@@ -7,7 +7,7 @@ const {
     FindAllRentalsController,
     FindAllMyRentalsController,
     UpdateRentalStatusController,
-    EndRentalController,
+    EarlyEndRentalController,
     DeleteRentalController
 } = require('../src/controllers/rentalController')
 
@@ -31,13 +31,13 @@ router.delete('/rentals/:id', verifyToken, DeleteRentalController);
 // Protected routes ------------------------------------------------------
 
 // Get all rentals
-router.get('/admin/rentals', verifyToken, requireAdmin, FindAllRentalsController);
+router.get('/admin/rentals', verifyToken, FindAllRentalsController);
 
 // Update rental status
 router.put('/admin/rentals/:id', verifyToken, requireAdmin, UpdateRentalStatusController);
 
 // End a rental - only use after unit has been rented
-router.put('/admin/rentals/:id/end', verifyToken, requireAdmin, EndRentalController);
+router.put('/admin/rentals/:id/end', verifyToken, requireAdmin, EarlyEndRentalController);
 
 
 

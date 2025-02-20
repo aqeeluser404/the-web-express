@@ -1,8 +1,10 @@
 const User = require('../models/userModel')
-const { verifyEmail, sendResetEmail, getInContactEmail } = require('../utils/sendEmail')
+const { verifyEmail, sendResetEmail, getInContactEmail, requestFromTenantEmail, rentalNotifcationEmail, sendRentalRejectionEmail, sendExtendedDateEmail } = require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto');
+const Unit = require('../models/unitModel')
+const Rental = require('../models/rentalModel')
 
 // VERIFY EMAIL FROM TOKEN QUERY
 module.exports.VerifyEmailController = async (req, res) => {
@@ -116,6 +118,81 @@ module.exports.GetInContactController = async (req, res) => {
             return res.status(400).send('User not found.')
         }
         getInContactEmail(user, message)
+        res.status(200).send('Message sent successfully.')
+    } catch (error) {
+        console.error('Error sending message:', error.message)
+        res.status(500).send('Error sending message.')
+    }
+}
+module.exports.SendUserRequestController = async (req,res) => {
+    try {
+        const { id } = req.params
+        const { message } = req.body
+
+        const user = await User.findById(id)
+        if (!user) {
+            return res.status(400).send('User not found.')
+        }
+        requestFromTenantEmail(user, message)
+        res.status(200).send('Message sent successfully.')
+    } catch (error) {
+        console.error('Error sending message:', error.message)
+        res.status(500).send('Error sending message.')
+    }
+}
+module.exports.RentalNotifcationController = async (req, res) => {
+    try {
+        const { userId, unitId, rentalId } = req.body
+
+        const user = await User.findById(userId)
+        if (!user) {
+            return res.status(400).send('User not found.')
+        }
+
+        const unit = await Unit.findById(unitId)
+        if (!unit) {
+            return res.status(400).send('Unit not found.')
+        }
+        const rental = await Rental.findById(rentalId)
+        if (!rental) {
+            return res.status(400).send('Rental not found.')
+        }
+        rentalNotifcationEmail(user, unit, rental)
+        res.status(200).send('Message sent successfully.')
+    } catch (error) {
+        console.error('Error sending message:', error.message)
+        res.status(500).send('Error sending message.')
+    }
+}
+
+module.exports.SendRentalRejectionController = async (req, res) => {
+    try {
+        const { userId, message } = req.body
+
+        const user = await User.findById(userId)
+        if (!user) {
+            return res.status(400).send('User not found.')
+        }
+
+        sendRentalRejectionEmail(user, message)
+        res.status(200).send('Message sent successfully.')
+    } catch (error) {
+        console.error('Error sending message:', error.message)
+        res.status(500).send('Error sending message.')
+    }
+}
+
+module.exports.SendExtendedDateEmailController = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { message } = req.body
+
+        const user = await User.findById(id)
+        if (!user) {
+            return res.status(400).send('User not found.')
+        }
+
+        sendExtendedDateEmail(user, message)
         res.status(200).send('Message sent successfully.')
     } catch (error) {
         console.error('Error sending message:', error.message)

@@ -102,7 +102,135 @@ const getInContactEmail = (user, message) => {
     })
 }
 
-// rental Notification method 
-// .....
+// CONTACT FORM EMAIL
+const requestFromTenantEmail = (user, message) => {
+    const transporter = createMailTransporter()
 
-module.exports = { verifyEmail, getInContactEmail, sendResetEmail }
+    const mailOptions = {
+        from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
+        to: process.env.BUSINESS_EMAIL_ADDRESS,
+        subject: `Contact Administration from ${user.firstName} ${user.lastName}`,
+        html: `
+            <p>Dear The Web Team,</p>
+            <p>You have received a new request from one of your tenants.</p>
+            <p>
+                <strong>Email received from: </strong>${user.firstName} ${user.lastName}<br>
+                <strong>Tenant ID: </strong>${user._id}<br>
+                ${message}
+            </p>
+            <p>
+                Best regards,<br>
+                The Web Team
+            </p>
+        `
+    }
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error.message);
+        } else {
+            console.log('Email sent successfully!');
+        }
+    })
+}
+
+// rental Notification method 
+const rentalNotifcationEmail = (user, unit, rental) => {
+    const transporter = createMailTransporter()
+
+    const mailOptions = {
+        from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
+        to: user.email,
+        subject: 'Rental Application Approved',
+        html: `
+            <p>Dear ${user.firstName},</p>
+            <p>We are pleased to inform you that your rental application has been approved.</p>
+            <p>
+                Thank you for choosing our services. We look forward to providing you with a great rental experience.<br>
+                <strong>Rental Identifier Number: </strong>${rental._id}<br>
+                <strong>Unit Number: </strong>${unit.unitNumber}<br>
+                <strong>Unit Type: </strong>${unit.unitType}<br>
+                <strong>Monthly Rent: </strong>R ${unit.unitPrice}.00
+            </p>
+            <p>
+                For enquiries you can email us at <a href="mailto:${process.env.BUSINESS_EMAIL_ADDRESS}">${process.env.BUSINESS_EMAIL_ADDRESS}</a>
+            </p>              
+            <p>
+                Best regards,<br>
+                The Web Team
+            </p>
+        `
+    }
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error.message);
+        } else {
+            console.log('Email sent successfully!');
+        }
+    })
+}
+
+const sendRentalRejectionEmail = (user, message) => {
+    const transporter = createMailTransporter();
+
+    const mailOptions = {
+        from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
+        to: user.email,
+        subject: 'Rental Application Rejected',
+        html: `
+            <p>Dear ${user.firstName},</p>
+            <p>We regret to inform you that your rental application has been rejected due to the following reasons:</p>
+            <p>${message}</P>
+            <p>Please review the documents and resubmit your application.</p>
+            <p>
+                For enquiries you can email us at <a href="mailto:${process.env.BUSINESS_EMAIL_ADDRESS}">${process.env.BUSINESS_EMAIL_ADDRESS}</a>
+            </p>            
+            <p>
+                Best regards,<br>
+                The Web Team
+            </p>
+        `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error.message);
+        } else {
+            console.log('Rejection email sent successfully!');
+        }
+    });
+};
+
+const sendExtendedDateEmail = (user, message) => {
+    const transporter = createMailTransporter();
+
+    const mailOptions = {
+        from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
+        to: user.email,
+        subject: 'Rental Application Extended',
+        html: `
+            <p>Dear ${user.firstName},</p>
+            <p>We are pleased to inform you that your request for a lease extension has been approved.</p>
+            <p>
+                <strong>Extension Date: </strong>${message}.
+            </p>
+            <p>We appreciate your continued residency and look forward to serving you in the future.</p>
+            <p>
+                For enquiries you can email us at <a href="mailto:${process.env.BUSINESS_EMAIL_ADDRESS}">${process.env.BUSINESS_EMAIL_ADDRESS}</a>
+            </p>            
+            <p>
+                Best regards,<br>
+                The Web Team
+            </p>
+        `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error.message);
+        } else {
+            console.log('Rejection email sent successfully!');
+        }
+    });
+}
+
+module.exports = { verifyEmail, getInContactEmail, requestFromTenantEmail, sendResetEmail, rentalNotifcationEmail, sendRentalRejectionEmail, sendExtendedDateEmail }

@@ -1,5 +1,6 @@
 const Unit = require('../models/unitModel');
 const ImageKit = require('imagekit');
+const Rental = require('../models/rentalModel')
 
 const imageKit = new ImageKit({
     publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
@@ -25,6 +26,11 @@ const uploadImageToImageKit = async (file) => {
 
 module.exports.CreateUnitService = async (unitDetails, unitImg) => {
     try {
+        const existingUnit = await Unit.findOne({ unitNumber: unitDetails.unitNumber})
+        if (existingUnit) {
+            throw new Error('Unit with this number already exists');
+        }
+
         if (unitImg && unitImg.length > 0) {
             const uploadPromises = unitImg.map(file => uploadImageToImageKit(file));
             const uploadedImages = await Promise.all(uploadPromises);
@@ -39,6 +45,7 @@ module.exports.CreateUnitService = async (unitDetails, unitImg) => {
 
         const unitModelData = new Unit({
             unitNumber: unitDetails.unitNumber,
+            floorLevel: unitDetails.floorLevel,
             unitType: unitDetails.unitType,
             unitOccupants: unitDetails.unitOccupants,
             currentOccupants: 0, // Initialize current occupants to 0
@@ -135,6 +142,13 @@ module.exports.DeleteUnitService = async (id) => {
     if (!unit) {
         throw new Error('Unit not found');
     }
+
+    // Check if the unit is referenced in any previous rentals
+    const rentalWithUnit = await Rental.findOne({ unit: id });
+    if (rentalWithUnit) {
+        throw new Error('Unit cannot be deleted as it is referenced in a previous rental. Please delete the rental first.');
+    }
+
     // Delete the images from ImageKit
     for (const image of unit.images) {
         if (image.fileId) {

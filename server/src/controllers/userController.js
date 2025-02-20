@@ -2,7 +2,8 @@ const UserService = require('../services/userService')
 
 module.exports.UserRegisterController = async (req, res) => {
     try {
-        await UserService.UserRegisterService(req.body)
+        const userDetails  = req.body
+        await UserService.UserRegisterService(userDetails)
         res.status(201).json({ message: 'User registered' })
     } catch (error) {
         res.status(400).json({ error: error.message })

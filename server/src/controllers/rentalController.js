@@ -50,19 +50,19 @@ module.exports.FindAllMyRentalsController = async (req, res) => {
 
 module.exports.UpdateRentalStatusController = async (req, res) => {
     try {
-        const { rentalId } = req.params;
+        const { id } = req.params;
         const rentalDetails = req.body;
-        const updatedRental = await RentalService.UpdateRentalService(rentalId, rentalDetails);
+        const updatedRental = await RentalService.UpdateRentalService(id, rentalDetails);
         res.status(200).json(updatedRental);
     } catch (error) {
         res.status(404).json({ message: 'Failed to update rental', error: error.toString() });
     }
 };
 
-module.exports.EndRentalController = async (req, res) => {
+module.exports.EarlyEndRentalController = async (req, res) => {
     try {
-        const { rentalId } = req.params;
-        await RentalService.EndRentalService(rentalId);
+        const { id } = req.params;
+        await RentalService.EarlyEndRentalService(id);
         res.status(200).json({ message: 'Rental ended successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Failed to end rental', error: error.toString() });

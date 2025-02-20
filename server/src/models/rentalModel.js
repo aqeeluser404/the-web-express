@@ -9,7 +9,8 @@ const rentalSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            default: 'Pending'
+            default: 'Pending',
+            enum: ['Pending', 'Rejected', 'Active', 'Ended'],
         },
         rentalStartDate: {
             type: Date,
@@ -18,6 +19,11 @@ const rentalSchema = new mongoose.Schema(
         rentalEndDate: {
             type: Date,
             default: null 
+        },
+        earlyEndDate: {
+            type: Date,
+            default: null ,
+            required: false
         },
         rentalPrice: {
             type: Number,

@@ -28,7 +28,13 @@ module.exports.UserRegisterService = async (userDetails) => {
             username: userDetails.username,
             password: hashedPassword,
             userType: userType,
-            dateCreated: new Date()
+            dateCreated: new Date(),
+            gender: userDetails.gender,
+            studentInfo: {
+                isRegisteredStudent: userDetails.studentInfo.isRegisteredStudent,
+                studentNumber: userDetails.studentInfo.studentNumber,
+                registeredInstitution: userDetails.studentInfo.registeredInstitution
+            }
         })
 
         // generate email token

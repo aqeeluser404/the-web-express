@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken')
 const jwtSecret = process.env.JWT_SECRET
 const User = require('../src/models/userModel');
 const axios = require('axios')
+const { EndRentalService } = require('../src/services/rentalService');
+const Rental = require('../src/models/rentalModel')
 
 async function checkTokens() {
     const users = await User.find({ 'loginInfo.isLoggedIn': true })
@@ -26,6 +28,17 @@ async function checkTokens() {
             }
         }
     }
+
+  // Check for rentals that need to be ended
+  const now = new Date();
+  const rentalsToEnd = await Rental.find({
+    rentalEndDate: { $lte: now },
+    status: 'Active'
+  });
+
+  for (const rental of rentalsToEnd) {
+    await EndRentalService(rental._id); // Use the service function
+  }
 }
 function verifyToken(req, res, next) {
     const token = req.cookies.token

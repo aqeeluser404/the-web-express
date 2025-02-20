@@ -37,6 +37,21 @@ const userSchema = new mongoose.Schema(
             default: Date.now
         },
 
+        gender: {
+            type: String,
+            enum: ['Male', 'Female'],
+            required: false
+        },
+
+        studentInfo: {
+            isRegisteredStudent: {
+                type: Boolean,
+                default: false
+            },
+            studentNumber: String,
+            registeredInstitution: String
+        },
+        
         verification: {
             isVerified: {
                 type: Boolean,
