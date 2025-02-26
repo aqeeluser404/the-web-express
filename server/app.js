@@ -102,7 +102,8 @@ const routes = [
     require('./routes/userRoutes'),
     require('./routes/emailRoutes'),
     require('./routes/unitRoutes'),
-    require('./routes/rentalRoutes')
+    require('./routes/rentalRoutes'),
+    require('./routes/callLogRoutes')
 ]
 routes.forEach(route => {
     app.use(route)

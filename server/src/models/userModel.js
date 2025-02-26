@@ -89,6 +89,12 @@ const userSchema = new mongoose.Schema(
             ref: 'Rental'
         }],
 
+        // FK FIELDS
+        callLogs: [{
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }],
+
         // DOCUMENTS
         documents: [{
             documentUrl: { type: String, required: false },
