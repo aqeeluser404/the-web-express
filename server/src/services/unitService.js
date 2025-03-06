@@ -24,6 +24,23 @@ const uploadImageToImageKit = async (file) => {
     }
 };
 
+// module.exports.GenerateAccessKeyService = async (unitId) => {
+//     try {
+//         const unit = await Unit.findById(unitId);
+//         if (!unit) {
+//             throw new Error('Unit not found');
+//         }
+
+//         unit.accessKey.isShared = true;
+//         unit.isShared();
+//         await unit.save(); // Ensure the save operation is awaited
+
+//         return unit.accessKey.assignedKey; 
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
 module.exports.CreateUnitService = async (unitDetails, unitImg) => {
     try {
         const existingUnit = await Unit.findOne({ unitNumber: unitDetails.unitNumber})

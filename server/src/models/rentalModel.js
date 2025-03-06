@@ -45,6 +45,11 @@ const rentalSchema = new mongoose.Schema(
             ref: 'User',
             required: true
         },
+        
+        accessKey: {
+            type: String,
+            required: false
+        }
     }, { collection: 'Rental' }
 )
 module.exports = mongoose.model('Rental', rentalSchema)

@@ -1,69 +1,168 @@
 const Rental = require('../models/rentalModel');
 const Unit = require('../models/unitModel');
 const User = require('../models/userModel')
+const UnitService = require('../services/unitService')
+const crypto = require('crypto');
+
+// module.exports.CreateRentalService = async (rentalDetails) => {
+//     try {
+//       const unit = await Unit.findById(rentalDetails.unit);
+//       const user = await User.findById(rentalDetails.user);
+//       if (!unit) { throw new Error('Unit not found'); }
+//       if (!user) { throw new Error('User not found'); }
+//       if (unit.currentOccupants >= unit.unitOccupants) { throw new Error('Unit is already at full capacity'); }
+  
+//       const activeOrPendingRentals = await Rental.find({
+//         user: rentalDetails.user,
+//         status: { $in: ['Pending', 'Active'] },
+//       });
+  
+//       if (activeOrPendingRentals.length > 0) {
+//         throw new Error('User already has an active or pending rental');
+//       }
+  
+//       console.log('Rental Details:', rentalDetails);
+//       // Handle access key and gender assignment
+//       let accessKey;
+//       if (rentalDetails.accessKeyIsTrue) {
+//         if (unit.accessKey.isShared) {
+//           // Unit already has a shared key
+//           if (rentalDetails.accessKey !== unit.accessKey.assignedKey) {
+//             throw new Error('Invalid access key');
+//           }
+//           accessKey = unit.accessKey.assignedKey; // Use the existing key
+//         } else {
+//           // Generate a new access key
+//           accessKey = crypto.randomBytes(8).toString('hex');
+//           unit.accessKey = { isShared: true, assignedKey: accessKey };
+//           console.log('Before Save:', unit);
+//         }
+//       } else {
+//         // Check and set gender assignment if accessKey is not shared
+//         if (!unit.genderAssignment) {
+//           unit.genderAssignment = user.gender;
+//         } else if (unit.genderAssignment !== user.gender) {
+//           throw new Error(`This unit is only available for ${unit.genderAssignment}s.`);
+//         }
+//       }
+  
+//       // Increment currentOccupants before saving the unit
+//       unit.currentOccupants += 1;
+//       await unit.save();
+//       console.log('After Save:', unit);
+  
+//       // Create the rental
+//       const rentalModelData = new Rental({
+//         applicationDate: new Date(),
+//         status: 'Pending',
+//         rentalStartDate: rentalDetails.rentalStartDate || null,
+//         rentalEndDate: rentalDetails.rentalEndDate || null,
+//         rentalPrice: unit.unitPrice,
+//         unit: unit._id,
+//         unitType: unit.unitType,
+//         user: rentalDetails.user,
+//         accessKey: accessKey || null, // Assign the access key
+//       });
+  
+//       console.log('Rental Model Data:', rentalModelData);
+  
+//       await rentalModelData.save();
+  
+//       // Update user and unit
+//       await User.findOneAndUpdate(
+//         { _id: rentalDetails.user },
+//         { $push: { rentals: rentalModelData._id } },
+//         { new: true }
+//       );
+  
+//       unit.rentedHistory.push(rentalModelData._id);
+//       await unit.save();
+  
+//       return { rental: rentalModelData, accessKey };
+//     } catch (error) {
+//       throw error;
+//     }
+// };
 
 module.exports.CreateRentalService = async (rentalDetails) => {
     try {
-        // Check if unit is available
-        const unit = await Unit.findById(rentalDetails.unit);
-        if (!unit) {
-            throw new Error('Unit not found');
+      const unit = await Unit.findById(rentalDetails.unit);
+      const user = await User.findById(rentalDetails.user);
+      if (!unit) { throw new Error('Unit not found'); }
+      if (!user) { throw new Error('User not found'); }
+      if (unit.currentOccupants >= unit.unitOccupants) { throw new Error('Unit is already at full capacity'); }
+  
+      const activeOrPendingRentals = await Rental.find({
+        user: rentalDetails.user,
+        status: { $in: ['Pending', 'Active'] },
+      });
+  
+      if (activeOrPendingRentals.length > 0) {
+        throw new Error('User already has an active or pending rental');
+      }
+  
+      console.log('Rental Details:', rentalDetails);
+      // Handle access key and gender assignment
+      let accessKey;
+      if (rentalDetails.accessKeyIsTrue) {
+        if (unit.accessKey.isShared) {
+          // Unit already has a shared key
+          if (rentalDetails.accessKey !== unit.accessKey.assignedKey) {
+            throw new Error('Invalid access key');
+          }
+          accessKey = unit.accessKey.assignedKey; // Use the existing key
+        } else {
+          // Generate a new access key
+          accessKey = crypto.randomBytes(8).toString('hex');
+          unit.accessKey = { isShared: true, assignedKey: accessKey };
+          console.log('Before Save:', unit);
         }
-
-        const user = await User.findById(rentalDetails.user)
-        if (!user) {
-            throw new Error('User not found');
-        }
-
-        if (unit.currentOccupants >= unit.unitOccupants) {
-            throw new Error('Unit is already at full capacity');
-        }
-
-        const activeOrPendingRentals = await Rental.find({
-            user: rentalDetails.user,
-            status: { $in: ['Pending', 'Active'] }
-        })
-        if (activeOrPendingRentals.length > 0) {
-            throw new Error('User already has an active or pending rental');
-        }
-
-        // Check and set gender assignment
-        if (!unit.genderAssignment) {
+      } else {
+        // Check and set gender assignment if accessKey is not shared
+        if (!unit.accessKey.isShared) {
+          if (!unit.genderAssignment) {
             unit.genderAssignment = user.gender;
-        } else if (unit.genderAssignment !== user.gender) {
+          } else if (unit.genderAssignment !== user.gender) {
             throw new Error(`This unit is only available for ${unit.genderAssignment}s.`);
+          }
         }
-
-        // Create rental
-        const rentalModelData = new Rental({
-            applicationDate: new Date(),     // Application date
-            status: 'Pending',  // This can be updated once the documents are uploaded
-            rentalStartDate: rentalDetails.rentalStartDate || null,    // This can be updated once the documents are uploaded
-            rentalEndDate: rentalDetails.rentalEndDate || null,  
-            rentalPrice: unit.unitPrice,    // Get from the checking unit var
-            unit: unit._id,    // Get from the checking unit var
-            unitType: unit.unitType,    // Get from the checking unit var
-            user: rentalDetails.user
-        });
-
-        // Save rental
-        await rentalModelData.save();
-
-        // Update user with rental
-        await User.findOneAndUpdate(
-            { _id: rentalDetails.user }, 
-            { $push: { rentals: rentalModelData._id } }, 
-            { new: true }
-        );
-
-        // Update the rental history in unit and increment current occupants
-        unit.currentOccupants += 1;
-        unit.rentedHistory.push(rentalModelData._id);
-        await unit.save();
-
-        return rentalModelData;
+      }
+  
+      // Increment currentOccupants before saving the unit
+      unit.currentOccupants += 1;
+      await unit.save();
+      console.log('After Save:', unit);
+  
+      // Create the rental
+      const rentalModelData = new Rental({
+        applicationDate: new Date(),
+        status: 'Pending',
+        rentalStartDate: rentalDetails.rentalStartDate || null,
+        rentalEndDate: rentalDetails.rentalEndDate || null,
+        rentalPrice: unit.unitPrice,
+        unit: unit._id,
+        unitType: unit.unitType,
+        user: rentalDetails.user,
+        accessKey: accessKey || unit.accessKey.assignedKey || null, // Assign the access key
+      });
+  
+      console.log('Rental Model Data:', rentalModelData);
+  
+      await rentalModelData.save();
+  
+      // Update user and unit
+      await User.findOneAndUpdate(
+        { _id: rentalDetails.user },
+        { $push: { rentals: rentalModelData._id } },
+        { new: true }
+      );
+  
+      unit.rentedHistory.push(rentalModelData._id);
+      await unit.save();
+  
+      return { rental: rentalModelData, accessKey };
     } catch (error) {
-        throw error;
+      throw error;
     }
 };
 

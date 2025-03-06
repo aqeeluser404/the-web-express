@@ -2,8 +2,8 @@ const RentalService = require('../services/rentalService');
 
 module.exports.CreateRentalController = async (req, res) => {
     try {
-        const rental = await RentalService.CreateRentalService(req.body);
-        res.status(201).json({ message: 'Rental created successfully', rental });
+        const { rental, accessKey } = await RentalService.CreateRentalService(req.body);
+        res.status(201).json({ message: 'Rental created successfully', rental, accessKey });
     } catch (error) {
         res.status(500).json({ message: 'Failed to create rental', error: error.toString() });
     }
