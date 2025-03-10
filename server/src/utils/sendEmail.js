@@ -1,10 +1,10 @@
-const createMailTransporter = require('./createMailTransporter')
+const createMailTransporterWrapper = require('./createMailTransporter')
 
 // VERIFY EMAIL
 const verifyEmail = (user) => {
-    const transporter = createMailTransporter();
+    const transporter = createMailTransporterWrapper();
 
-    const verificationLink = `${process.env.HOST_LINK_2}/#/verify-email?token=${user.verification.verificationToken}`
+    const verificationLink = `${process.env.HOST_LINK}/#/verify-email?token=${user.verification.verificationToken}`
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
         to: user.email,
@@ -38,9 +38,9 @@ const verifyEmail = (user) => {
 
 // PASSWORD RESET EMAIL
 const sendResetEmail = (user, token) => {
-    const transporter = createMailTransporter()
+    const transporter = createMailTransporterWrapper()
 
-    const resetLink = `${process.env.HOST_LINK_2}/#/reset-password?token=${token}`
+    const resetLink = `${process.env.HOST_LINK}/#/reset-password?token=${token}`
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
         to: user.email,
@@ -73,7 +73,7 @@ const sendResetEmail = (user, token) => {
 
 // CONTACT FORM EMAIL
 const getInContactEmail = (user, message) => {
-    const transporter = createMailTransporter()
+    const transporter = createMailTransporterWrapper()
 
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
@@ -104,7 +104,7 @@ const getInContactEmail = (user, message) => {
 
 // CONTACT FORM EMAIL
 const requestFromTenantEmail = (user, message) => {
-    const transporter = createMailTransporter()
+    const transporter = createMailTransporterWrapper()
 
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
@@ -135,7 +135,7 @@ const requestFromTenantEmail = (user, message) => {
 
 // rental Notification method 
 const rentalNotifcationEmail = (user, unit, rental) => {
-    const transporter = createMailTransporter()
+    const transporter = createMailTransporterWrapper()
 
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
@@ -170,7 +170,7 @@ const rentalNotifcationEmail = (user, unit, rental) => {
 }
 
 const sendRentalRejectionEmail = (user, message) => {
-    const transporter = createMailTransporter();
+    const transporter = createMailTransporterWrapper();
 
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,
@@ -201,7 +201,7 @@ const sendRentalRejectionEmail = (user, message) => {
 };
 
 const sendExtendedDateEmail = (user, message) => {
-    const transporter = createMailTransporter();
+    const transporter = createMailTransporterWrapper();
 
     const mailOptions = {
         from: `The Web <${process.env.BUSINESS_EMAIL_ADDRESS}>`,

@@ -16,8 +16,9 @@ app.use(cookieParser())
 app.use(express.json())
 
 const allowedOrigins = [
-    process.env.HOST_LINK_1,
-    process.env.HOST_LINK_2
+    process.env.HOST_LINK
+    // process.env.HOST_LINK_1,
+    // process.env.HOST_LINK_2
     // process.env.HOST_LINK_3,
     // "https://the-web-mobile-app.onrender.com",
     // "https://the-web.co.za"
