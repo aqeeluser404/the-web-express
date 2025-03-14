@@ -3,6 +3,7 @@ const Unit = require('../models/unitModel');
 const User = require('../models/userModel')
 const UnitService = require('../services/unitService')
 const crypto = require('crypto');
+const { scorePayerData } = require('../utils/scoreApi')
 
 // module.exports.CreateRentalService = async (rentalDetails) => {
 //     try {
@@ -254,6 +255,7 @@ module.exports.UpdateRentalService = async (rentalId, rentalDetails) => {
         throw error
     }
 }
+
 module.exports.EndRentalService = async (rentalId) => {
     try {
 
@@ -277,6 +279,70 @@ module.exports.EndRentalService = async (rentalId) => {
         throw error
     }
 }
+
+// module.exports.verifyAndSavePayerService = async (rentalId, payerData) => {
+//     try {
+//         const rental = await Rental.findById(rentalId);
+//         if (!rental) {
+//             throw new Error('Rental not found');
+//         }
+
+//         const apiResponse = await callPiplAPI(payerData);
+
+//         const isEligible = apiResponse.identity && apiResponse.identity.names && apiResponse.identity.names.length > 0;
+
+//         payerData.isValidated = isEligible; // Mark as validated (true/false)
+//         rental.payerData = payerData; // Save updated payerData
+//         await rental.save(); // Save changes to DB
+
+//         return { isValidated: isEligible };
+//     } catch (error) {
+//         throw new Error('Failed to verify payer data: ' + error.message);
+//     }
+// };
+
+
+module.exports.verifyAndSavePayerService = async (rentalId, rentalData) => {
+    try {
+        const rental = await Rental.findById(rentalId);
+        if (!rental) {
+            throw new Error('Rental not found');
+        }
+
+        // Score the payer data
+        const score = scorePayerData(rentalData.payerData);
+        const isEligible = score >= 60;
+
+        // Ensure payerData exists
+        rental.payerData = rental.payerData || {}; 
+        
+        // Store validation result
+        rental.payerData.isValidated = isEligible;
+        rental.payerData.score = score;
+
+        // Assign other payer data
+        rental.payerData.firstName = rentalData.payerData.firstName;
+        rental.payerData.lastName = rentalData.payerData.lastName;
+        rental.payerData.email = rentalData.payerData.email;
+        rental.payerData.idNumber = String(rentalData.payerData.idNumber);
+        rental.payerData.salary = rentalData.payerData.salary;
+
+        // Ensure bankName is a string
+        rental.payerData.bankName = 
+            typeof rentalData.payerData.bankName === 'object' 
+                ? rentalData.payerData.bankName.value 
+                : rentalData.payerData.bankName;
+
+        await rental.save(); 
+
+        return { isValidated: isEligible, score };
+    } catch (error) {
+        console.error("Error in verifyAndSavePayerService:", error.message);
+        throw new Error('Failed to verify payer data: ' + error.message);
+    }
+};
+
+
 module.exports.EarlyEndRentalService = async (rentalId) => {
     try {
         const rental = await Rental.findById(rentalId);

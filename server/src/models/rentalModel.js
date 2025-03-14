@@ -30,6 +30,24 @@ const rentalSchema = new mongoose.Schema(
             required: true
         },
 
+        // PAYER FIELDS
+        payerData: {
+            firstName: String,
+            lastName: String,
+            email: String,
+            idNumber: String,  
+            bankName: String,
+            salary: Number,
+            score: {
+                type: Number,
+                default: 0,
+            },
+            isValidated: {
+                type: Boolean,
+                default: false
+            },
+        },
+
         // FK FIELDS
         unit: {
             type: Schema.Types.ObjectId,

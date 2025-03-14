@@ -1,79 +1,90 @@
+require('dotenv').config();
 
-// To integrate the Pipl API into your Express and Quasar web app for verifying eligibility, follow these steps:
+const validateSouthAfricanID = (idNumber) => {
+    idNumber = String(idNumber); // Force to string
 
-// 1. Get an API Key
-// Sign up for a Pipl account and obtain an API key. This key is required for all API calls. You can find more details on how to get started here.
+    // Basic validation of South African ID number structure: 13 digits
+    if (!/^\d{13}$/.test(idNumber)) {
+        console.error("Invalid ID format:", idNumber);
+        return { isValid: false, message: 'Invalid ID number format' };
+    }
 
-// 2. Set Up Your Backend (Express)
-// Install necessary dependencies:
+    // Checksum validation
+    let sum = 0;
+    let shouldDouble = false;
 
-// bash
-// npm install axios dotenv
-// Create a .env file to store your API key securely:
+    for (let i = 0; i < 12; i++) {
+        const char = idNumber.charAt(i);
+        const digit = parseInt(char, 10);
 
-// PIPL_API_KEY=your_api_key_here
-// Write an Express route to handle API calls:
+        if (isNaN(digit)) {
+            console.error("Non-numeric character found:", char);
+            return { isValid: false, message: 'ID number contains non-numeric characters' };
+        }
 
-// javascript
-// const express = require('express');
-// const axios = require('axios');
-// require('dotenv').config();
+        if (shouldDouble) {
+            let doubled = digit * 2;
+            if (doubled > 9) {
+                doubled -= 9;
+            }
+            sum += doubled;
+        } else {
+            sum += digit;
+        }
+        shouldDouble = !shouldDouble;
+    }
 
-// const app = express();
-// const PORT = 3000;
+    const checksum = (10 - (sum % 10)) % 10;
+    const isValid = checksum === parseInt(idNumber.charAt(12), 10);
 
-// app.use(express.json());
+    console.log("Checksum result:", { sum, checksum, isValid });
 
-// app.post('/verify', async (req, res) => {
-//     const { firstName, lastName, email } = req.body;
+    return { isValid, message: isValid ? 'ID number is valid' : 'Invalid ID number checksum' };
+};
 
-//     try {
-//         const response = await axios.get('https://api.pipl.com/search/', {
-//             params: {
-//                 first_name: firstName,
-// # //                 last_name: lastName,
-// # //                 email: email,
-// # //                 key: process.env.PIPL_API_KEY
-// # //             }
-// # //         });
 
-// # //         res.json(response.data);
-// # //     } catch (error) {
-// # //         res.status(500).json({ error: error.message });
-// # //     }
-// # // });
+const scorePayerData = (payerData) => {
+    let score = 0;
+    
+    // 1. Validate ID number and score
+    const idValidation = validateSouthAfricanID(payerData.idNumber);
+    score += idValidation.isValid ? 30 : 0;  // 30 points for valid ID number
+    console.log("ID Score: ", score)
 
-// # // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// # // 3. Integrate with Quasar Frontend
-// # // Use Axios to send user data from your Quasar app to the Express backend:
+    // 2. Check if first name is non-empty
+    if (payerData.firstName && /^[A-Za-z]+$/.test(payerData.firstName)) {
+        score += 10;  // 10 points for valid first name
+        console.log("First Name Score: ", score)
+    }
 
-// # // javascript
-// # // import axios from 'axios';
+    // 3. Check if last name is non-empty
+    if (payerData.lastName && /^[A-Za-z]+$/.test(payerData.lastName)) {
+        score += 10;  // 10 points for valid last name
+        console.log("Last Name Score: ", score)
+    }
 
-// # // export default {
-// # //     methods: {
-// # //         async verifyUser() {
-// # //             const userData = {
-// # //                 firstName: 'John',
-// # //                 lastName: 'Doe',
-// # //                 email: '[email protected]'
-// # //             };
+    // 4. Check if salary is a valid number within a reasonable range
+    if (payerData.salary && !isNaN(payerData.salary)) {
+        const salary = parseFloat(payerData.salary);
+        if (salary >= 2000 && salary <= 100000) {  // reasonable salary range check
+            score += 20;  // 20 points for valid salary
+            console.log("Salary Score: ", score)
+        }
+    }
 
-// # //             try {
-// # //                 const response = await axios.post('http://localhost:3000/verify', userData);
-// # //                 console.log('Verification Result:', response.data);
-// # //             } catch (error) {
-// # //                 console.error('Error verifying user:', error);
-// # //             }
-// # //         }
-// # //     }
-// # // };
-// # // 4. Test the Integration
-// # // Run your Express server and Quasar app.
+    // 5. Check if bank name is non-empty
+    if (payerData.bankName) {
+        const bankName = typeof payerData.bankName === 'object' ? payerData.bankName.value : payerData.bankName; // Extract value
+        if (/^[A-Za-z ]+$/.test(bankName)) {
+            score += 10; // 10 points for non-empty, valid bank name
+            console.log("Bank Score: ", score);
+        } else {
+            console.log("Invalid Bank Name Format:", bankName);
+        }
+    }
 
-// # // Use the verifyUser method to send test data and check the API response.
+    return score;
+};
 
-// # // 5. Handle API Responses
-// # // The Pipl API will return detailed information about the user. You can parse the response to determine if the user meets your eligibility criteria (e.g., income, employment status).
 
-// # // Let me know if you'd like help with any specific part of this integration!
+module.exports = { scorePayerData };
