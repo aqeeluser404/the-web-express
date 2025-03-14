@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const User = require('../models/userModel')
 const { verifyEmail } = require('../utils/sendEmail')
-const ImageKit = require('imagekit');
+const { uploadDocumentToImageKit, deleteDocumentFromImageKit } = require('../utils/imageKit')
 
 module.exports.UserRegisterService = async (userDetails) => {
     try {
@@ -189,28 +189,6 @@ module.exports.DeleteUserService = async (id) => {
     // return true
 }
 
-const imageKit = new ImageKit({
-    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
-});
-
-const uploadDocumentToImageKit = async (file) => {
-    try {
-        const result = await imageKit.upload({
-            file: file.buffer,
-            fileName: file.originalname
-        });
-        return {
-            documentUrl: result.url,
-            fileId: result.fileId // Store this ID for deletion
-        };
-    } catch (error) {
-        console.error('Error uploading document to ImageKit:', error.message);
-        throw error;
-    }
-};
-
 module.exports.UploadUserDocsService = async (userId, userDocs) => {
     try {
         const user = await User.findById(userId);
@@ -233,15 +211,6 @@ module.exports.UploadUserDocsService = async (userId, userDocs) => {
 
         return user;
     } catch (error) {
-        throw error;
-    }
-};
-
-const deleteDocumentFromImageKit = async (fileId) => {
-    try {
-        await imageKit.deleteFile(fileId);
-    } catch (error) {
-        console.error('Error deleting document from ImageKit:', error.message);
         throw error;
     }
 };

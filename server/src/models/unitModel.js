@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-const crypto = require('crypto');
 
 const unitSchema = new mongoose.Schema(
     {
@@ -60,19 +59,6 @@ const unitSchema = new mongoose.Schema(
         }
     }, { collection: 'Unit' }
 );
-
-// // Generate a unique shared key
-// function generateAccessKey() {
-//     return crypto.randomBytes(8).toString('hex'); // 16-character key
-// }
-
-// // Pre-save hook to generate a shared key if needed
-// unitSchema.methods.isShared = function() {
-//     if (this.accessKey.isShared && !this.accessKey.assignedKey) {
-//       this.accessKey.assignedKey = generateAccessKey();
-//     }
-//     next();
-// }
 
 // Pre-save hook to update unitStatus
 unitSchema.pre('save', function(next) {

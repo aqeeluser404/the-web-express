@@ -1,45 +1,6 @@
 const Unit = require('../models/unitModel');
-const ImageKit = require('imagekit');
 const Rental = require('../models/rentalModel')
-
-const imageKit = new ImageKit({
-    publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT
-});
-
-const uploadImageToImageKit = async (file) => {
-    try {
-        const result = await imageKit.upload({
-            file: file.buffer,
-            fileName: file.originalname
-        });
-        return {
-            imageUrl: result.url,
-            fileId: result.fileId // Store this ID for deletion
-        };
-    } catch (error) {
-        console.error('Error uploading image to ImageKit:', error.message);
-        throw error;
-    }
-};
-
-// module.exports.GenerateAccessKeyService = async (unitId) => {
-//     try {
-//         const unit = await Unit.findById(unitId);
-//         if (!unit) {
-//             throw new Error('Unit not found');
-//         }
-
-//         unit.accessKey.isShared = true;
-//         unit.isShared();
-//         await unit.save(); // Ensure the save operation is awaited
-
-//         return unit.accessKey.assignedKey; 
-//     } catch (error) {
-//         throw error;
-//     }
-// };
+const { uploadImageToImageKit, deleteImageFromImageKit } = require('../utils/imageKit')
 
 module.exports.CreateUnitService = async (unitDetails, unitImg) => {
     try {
@@ -143,16 +104,6 @@ module.exports.UpdateUnitService = async (id, unitDetails) => {
 //         throw error;
 //     }
 // };
-
-const deleteImageFromImageKit = async (fileId) => {
-    try {
-        const response = await imageKit.deleteFile(fileId);
-        console.log(`Deleted image from ImageKit: ${fileId}`);
-    } catch (error) {
-        console.error(`Failed to delete image from ImageKit: ${fileId}`, error.message);
-        console.error(`Error details:`, error.response ? error.response.data : 'No response data');
-    }
-};
 
 module.exports.DeleteUnitService = async (id) => {
     const unit = await Unit.findById(id);
