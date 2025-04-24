@@ -49,7 +49,11 @@ const userSchema = new mongoose.Schema(
                 default: false
             },
             studentNumber: String,
-            registeredInstitution: String
+            registeredInstitution: String,
+            hasBursary: {
+                type: Boolean,
+                default: false
+            },
         },
         
         verification: {

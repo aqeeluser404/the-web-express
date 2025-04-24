@@ -33,7 +33,8 @@ module.exports.UserRegisterService = async (userDetails) => {
             studentInfo: {
                 isRegisteredStudent: userDetails.studentInfo.isRegisteredStudent,
                 studentNumber: userDetails.studentInfo.studentNumber,
-                registeredInstitution: userDetails.studentInfo.registeredInstitution
+                registeredInstitution: userDetails.studentInfo.registeredInstitution,
+                hasBursary: userDetails.studentInfo.hasBursary
             }
         })
 
